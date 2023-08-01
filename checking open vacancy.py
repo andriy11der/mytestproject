@@ -1,10 +1,19 @@
+import io
+import random
 import datetime
 from time import sleep
-
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 
 logs_file = './logs/logs_existing_QA_Automation_position.log'
 f = open(logs_file, "w")
@@ -20,6 +29,7 @@ def browser():
         driver_service = Service(executable_path=ChromeDriverManager().install())
         chrome = webdriver.Chrome(service=driver_service)
         chrome.maximize_window()
+        chrome_options.set_capability('unhandledPromptBehavior', 'accept')
         return chrome
     except Exception as e:
         print(e)
@@ -46,29 +56,24 @@ def open_site(chrome):
         f.write(f"filter selected, {datetime.datetime.now()}\n")
         chrome.save_screenshot('./screenshots/App_positions_screenshot.png')
         sleep(2)
-        try:
-            elements = chrome.find_elements(By.XPATH, '//a[@href]')
-            job_titles = []
-            for element in elements:
-                job_title = element.get_attribute('innerText')
-                job_titles.append(job_title)
-            if 'QA Automation Engineer' in job_titles:
-                print('QA Automation Engineer position exists')
-                f.write(f"QA Automation Engineer position exists, {datetime.datetime.now()}\n")
-            else:
-                print('QA Automation Engineer position does not exist')
-                f.write(f"QA Automation Engineer position doesn't exists, {datetime.datetime.now()}\n")
-        except:
-            pass
     except Exception as e:
         chrome.save_screenshot('./screenshots/error.png')
         f.write(f"Failed at process {e}, {datetime.datetime.now()}\n")
         print(e)
 
+def find_QA_Automation_Engineer(chrome):
+    try:
+        sleep(2)
+        WebDriverWait(chrome, 10).until(EC.visibility_of_element_located((By.XPATH, "//a[text()='QA Automation Engineer']")))
+        print('Vacation is present')
+    except:
+        print('Vacation is missing')
+
 
 def main():
     chrome = browser()
     open_site(chrome)
+    find_QA_Automation_Engineer(chrome)
 
 
 if __name__ == '__main__':
